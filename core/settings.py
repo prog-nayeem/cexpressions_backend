@@ -15,9 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
-# CSRF_HEADER_NAME="HTTP_X_CSRFTOKEN"
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG").lower() in ['true', '1', 'yes']
 APPEND_SLASH=False
 
 ALLOWED_HOSTS = ['*', 'http://localhost:3000']
@@ -36,6 +34,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'tinymce',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
     'accounts',
     'api'
 ]
@@ -48,8 +48,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+  
 ]
+
+OTP_TOTP_ISSUER = 'Cexpressions Inc.'
+
 
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS=True
@@ -92,13 +98,22 @@ DATABASES = {
     }
 }
 
+DEFAULT_RENDERER_CLASSES = (
+    'rest_framework.renderers.JSONRenderer',
+)
+if DEBUG:
+    DEFAULT_RENDERER_CLASSES = DEFAULT_RENDERER_CLASSES + (
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
+
 REST_FRAMEWORK={
     'EXCEPTION_HANDLER': 'api.exceptions.custom_exception_handler',
     'NON_FIELD_ERRORS_KEY':'error',
         'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
 
 }
 
@@ -187,3 +202,5 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 TINYMCE_SPELLCHECKER = True
 TINYMCE_COMPRESSOR = False
+
+ADMIN_EMAIL=env("ADMIN_EMAIL")

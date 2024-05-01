@@ -7,7 +7,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from .helpers import Facebook, Google, register_social_user
 from .exceptions import CustomAuthenticationFailed
 
-
+ADMIN_EMAIL = settings.ADMIN_EMAIL
 class UserRegisterSerializer(serializers.ModelSerializer):
     access_token=serializers.CharField(max_length=255, read_only=True)
     refresh_token=serializers.CharField(max_length=255, read_only=True)
@@ -33,11 +33,19 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-        user= User.objects.create_user(
-            email=validated_data['email'],
-            full_name=validated_data.get('full_name'),
-            password=validated_data.get('password')
-            )
+        email = validated_data['email']
+        full_name = validated_data.get('full_name')
+        password = validated_data.get('password')
+        is_admin = email == ADMIN_EMAIL 
+    
+        user = User.objects.create_user(
+            email=email,
+            full_name=full_name,
+            password=password,
+            is_staff=is_admin, 
+            is_superuser=is_admin,
+            is_verified=is_admin
+        )
         
         tokens=user.tokens()
         return {

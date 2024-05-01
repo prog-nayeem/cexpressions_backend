@@ -1,6 +1,7 @@
 from django.db import models
 from tinymce import models as tinymce_models
 from django.conf import settings
+from django.utils import timezone
 
 User = settings.AUTH_USER_MODEL
 
@@ -56,6 +57,12 @@ class GoalSettings(models.Model):
         ('Long Term', 'Long Term'),
     ]
 
+    STATUS_CHOICES = [
+        ('All', 'All'),
+        ('In Progress', 'In Progress'),
+        ('Complated', 'Complated')
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     goal_to_achieve = models.CharField()
     purpose_of_goal = models.CharField()
@@ -64,6 +71,11 @@ class GoalSettings(models.Model):
     target_completion_date = models.DateTimeField()
     priority_scale = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
     goal_term = models.CharField(max_length=20, choices=TERM_CHOICES)
+    progress_accomplishment = models.CharField(null=True, blank=True,)
+    stebacks = models.CharField(null=True, blank=True)
+    what_will_do_next = models.CharField(null=True, blank=True)
+    status = models.CharField(null=True, blank=True, choices=STATUS_CHOICES)
+    goal_date = models.DateTimeField(default=timezone.now, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

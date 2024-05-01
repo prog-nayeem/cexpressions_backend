@@ -4,9 +4,11 @@ from rest_framework import serializers
 from .exceptions import CustomAuthenticationFailed
 from .serializers import FacebookSignInSerializer, GoogleSignInSerializer, UserRegisterSerializer, LoginSerializer
 from rest_framework import status
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
-# Create your views here.
 
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST'), name='post')
 class RegisterView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
@@ -26,6 +28,7 @@ class RegisterView(GenericAPIView):
             return Response({'errors': formatted_errors}, status=status_code)
 
 
+@method_decorator(ratelimit(key='ip', rate='30/m', method='POST'), name='post')
 class LoginUserView(GenericAPIView):
     serializer_class=LoginSerializer
     def post(self, request):
@@ -43,7 +46,7 @@ class LoginUserView(GenericAPIView):
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
-
+@method_decorator(ratelimit(key='ip', rate='30/m', method='POST'), name='post')
 class GoogleOauthSignInview(GenericAPIView):
     serializer_class=GoogleSignInSerializer
 
@@ -64,7 +67,8 @@ class GoogleOauthSignInview(GenericAPIView):
         data=((serializer.validated_data)['access_token'])
         return Response(data, status=status.HTTP_200_OK)
 
-        
+
+@method_decorator(ratelimit(key='ip', rate='30/m', method='POST'), name='post')
 class FacebookOauthSignInView(GenericAPIView):
     serializer_class = FacebookSignInSerializer
 
