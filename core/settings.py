@@ -18,7 +18,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG").lower() in ['true', '1', 'yes']
 APPEND_SLASH=False
 
-ALLOWED_HOSTS = ['*', 'http://localhost:3000']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -61,9 +61,7 @@ OTP_TOTP_ISSUER = 'Cexpressions Inc.'
 
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS=True
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-]
+CSRF_TRUSTED_ORIGINS = ["*"]
 
 ROOT_URLCONF = 'core.urls'
 
