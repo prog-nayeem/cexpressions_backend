@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'whitenoise.runserver_nostatic',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -204,3 +206,4 @@ TINYMCE_SPELLCHECKER = True
 TINYMCE_COMPRESSOR = False
 
 ADMIN_EMAIL=env("ADMIN_EMAIL")
+USE_ADMIN_OTP_LOGIN=env('USE_ADMIN_OTP_LOGIN').lower() in ['true', '1', 'yes']
