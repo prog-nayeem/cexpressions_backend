@@ -20,6 +20,8 @@ APPEND_SLASH=False
 
 ALLOWED_HOSTS = ['*']
 
+if not DEBUG:
+    RATELIMIT_IP_META_KEY = 'HTTP_X_REAL_IP'
 
 # Application definition
 
@@ -61,7 +63,10 @@ OTP_TOTP_ISSUER = 'Cexpressions Inc.'
 
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS=True
-CSRF_TRUSTED_ORIGINS = ["*"]
+CSRF_TRUSTED_ORIGINS = [
+    'http://*',
+    'https://*',
+]
 
 ROOT_URLCONF = 'core.urls'
 
@@ -126,7 +131,6 @@ SIMPLE_JWT = {
 
 }
 
-DOMAIN='localhost:3000'
 SITE_NAME = 'Cexpressions'
 
 
@@ -205,3 +209,4 @@ TINYMCE_COMPRESSOR = False
 
 ADMIN_EMAIL=env("ADMIN_EMAIL")
 USE_ADMIN_OTP_LOGIN=env('USE_ADMIN_OTP_LOGIN').lower() in ['true', '1', 'yes']
+

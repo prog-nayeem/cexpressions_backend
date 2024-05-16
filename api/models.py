@@ -44,6 +44,10 @@ class SuggestionsForSuccess(models.Model):
         self.is_active = True
         self.save() 
 
+    class Meta:
+        verbose_name = "Suggestion for Success"
+        verbose_name_plural = "Suggestions for Success"
+
 
 class GoalSettings(models.Model):
     PRIORITY_CHOICES = [
@@ -57,12 +61,6 @@ class GoalSettings(models.Model):
         ('Long Term', 'Long Term'),
     ]
 
-    STATUS_CHOICES = [
-        ('All', 'All'),
-        ('In Progress', 'In Progress'),
-        ('Complated', 'Complated')
-    ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     goal_to_achieve = models.CharField()
     purpose_of_goal = models.CharField()
@@ -71,12 +69,36 @@ class GoalSettings(models.Model):
     target_completion_date = models.DateTimeField()
     priority_scale = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
     goal_term = models.CharField(max_length=20, choices=TERM_CHOICES)
-    progress_accomplishment = models.CharField(null=True, blank=True,)
-    stebacks = models.CharField(null=True, blank=True)
-    what_will_do_next = models.CharField(null=True, blank=True)
-    status = models.CharField(null=True, blank=True, choices=STATUS_CHOICES)
-    goal_date = models.DateTimeField(default=timezone.now, editable=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.goal_to_achieve
+    
+    class Meta:
+        verbose_name = "Goal Setting" 
+        verbose_name_plural = "Goal Settings" 
+
+
+
+class Progress(models.Model):
+    STATUS_CHOICES = [
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed')
+    ]
+
+    goal = models.ForeignKey(GoalSettings, on_delete=models.CASCADE, related_name='progresses')
+    progress_accomplishment = models.CharField(max_length=255, null=True, blank=True)
+    setbacks = models.CharField(max_length=255, null=True, blank=True)
+    what_will_do_next = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True)
+    goal_date = models.DateTimeField(default=timezone.now, editable=True)
+
+    def __str__(self):
+        return f"Progress for {self.goal.goal_to_achieve} on {self.goal_date}"
+    
+    class Meta:
+        verbose_name = "Progress" 
+        verbose_name_plural = "Progresses"
 
 
 

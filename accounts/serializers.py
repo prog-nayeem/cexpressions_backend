@@ -55,7 +55,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "refresh_token":str(tokens.get('refresh'))
         }
     
-
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=155, error_messages= {'required': 'Please provide your email address.'})
     password=serializers.CharField(max_length=68, write_only=True, error_messages={

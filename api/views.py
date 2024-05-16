@@ -6,7 +6,7 @@ from rest_framework import status, permissions
 
 from accounts.models import User
 from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization
-from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer
+from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer, ProgressSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed, NotFound
 from django_ratelimit.decorators import ratelimit
@@ -42,7 +42,6 @@ class UnderstandingGoalPrioritizationView(viewsets.ViewSet):
         except Exception as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   
-
 class SuccessfulGoalPlanningInstructionView(viewsets.ViewSet):
     @method_decorator(ratelimit(key='user_or_ip', rate='100/m', method='GET'))
     def retrieve(self, request):
@@ -71,7 +70,6 @@ class SuggestionsForSuccessView(viewsets.ViewSet):
         except Exception as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
   
-
 class IsOwner(permissions.BasePermission):
     """
     Custom permission to only allow owners of an object to edit or delete it.
@@ -152,3 +150,22 @@ class GoalSettingsView(APIView):
 
         goal.delete()
         return Response({'success': True, 'message': 'Goal deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class ProgressView(APIView):
+    serializer_class = ProgressSerializer
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(ratelimit(key='user_or_ip', rate='40/m', method='POST'))
+    def post(self, request, goal_id):
+        goal = get_object_or_404(GoalSettings, id=goal_id)
+        if goal.user != request.user:
+            return Response({'success': False, 'error': 'You are not allowed to add progress to this goal.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ProgressSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(goal=goal)
+            return Response({'success': True, 'message': 'Progress added successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
+            return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
