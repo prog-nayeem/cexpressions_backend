@@ -3,7 +3,6 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-
 from accounts.models import User
 from .models import AboutPage, GoalSettings, Progress, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization
 from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer, ProgressSerializer
@@ -162,9 +161,8 @@ class GoalSettingsView(APIView):
             return Response({'success': False, 'error': 'You are not allowed to delete this goal.'}, status=status.HTTP_403_FORBIDDEN)
 
         goal.delete()
-        return Response({'success': True, 'message': 'Goal deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'success': True, 'message': 'Goal deleted successfully'}, status=status.HTTP_200_OK)
     
-
 class ProgressView(APIView):
     serializer_class = ProgressSerializer
     permission_classes = [IsAuthenticated]
