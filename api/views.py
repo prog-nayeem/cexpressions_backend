@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 
 from accounts.models import User
-from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization
+from .models import AboutPage, GoalSettings, Progress, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization
 from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer, ProgressSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed, NotFound
@@ -87,12 +87,25 @@ class GoalSettingsView(APIView):
         except AuthenticationFailed:
             return Response({'success': False, 'error': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def get_user_goals(self, user, status=None):
-        goals = GoalSettings.objects.filter(user=user)
-        if status:
-            goals = goals.filter(status=status)
-        serializer = GoalSettingsSerializer(goals, many=True)
-        return serializer.data
+    def get_user_goals(self, user, progress_status=None):
+        goals = GoalSettings.objects.filter(user=user).prefetch_related('progresses')
+        goal_data = []
+
+        if progress_status:
+            for goal in goals:
+                progresses = goal.progresses.filter(status=progress_status)
+                if progresses.exists(): 
+                    goal_dict = GoalSettingsSerializer(goal).data
+                    goal_dict['progresses'] = ProgressSerializer(progresses, many=True).data
+                    goal_data.append(goal_dict)
+        else:
+            for goal in goals:
+                progresses = goal.progresses.all()
+                goal_dict = GoalSettingsSerializer(goal).data
+                goal_dict['progresses'] = ProgressSerializer(progresses, many=True).data
+                goal_data.append(goal_dict)
+
+        return goal_data
     
     @method_decorator(ratelimit(key='user_or_ip', rate='100/m', method='GET'))
     def get(self, request):
@@ -101,8 +114,8 @@ class GoalSettingsView(APIView):
             if not isinstance(user, User): 
                 raise NotFound("User not found.")
             
-            status = request.query_params.get('status')
-            user_goals = self.get_user_goals(user, status=status)
+            progress_status = request.query_params.get('status')
+            user_goals = self.get_user_goals(user, progress_status=progress_status)
             return Response({'success': True, 'data': user_goals})
         except NotFound as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -166,6 +179,25 @@ class ProgressView(APIView):
         if serializer.is_valid():
             serializer.save(goal=goal)
             return Response({'success': True, 'message': 'Progress added successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
+            return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+    @method_decorator(ratelimit(key='user_or_ip', rate='30/m', method='PATCH'))
+    def patch(self, request, progress_id, format=None):
+        try:
+            progress = Progress.objects.get(id=progress_id)
+        except Progress.DoesNotExist:
+            return Response({'success': False, 'error': 'Progress not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if progress.goal.user != request.user:
+            return Response({'success': False, 'error': 'You are not allowed to update this progress.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ProgressSerializer(progress, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success': True, 'message': 'Progress updated successfully'}, status=status.HTTP_200_OK)
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
             return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)

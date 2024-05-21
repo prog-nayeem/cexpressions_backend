@@ -8,7 +8,8 @@ urlpatterns = [
     path('suggestions-for-success/', SuggestionsForSuccessView.as_view({'get': 'retrieve'}), name='suggestions_for_success'),
     path('goal-settings/', GoalSettingsView.as_view(), name='goal_settings_list'),  # For listing all goals
     path('goal-settings/<int:pk>/', GoalSettingsView.as_view(), name='goal_settings'),
-    path('goal-settings/<int:goal_id>/progress/', ProgressView.as_view(), name='add_progress'),
+    path('goal-settings/<int:goal_id>/progress/', ProgressView.as_view(), name='goal_progress_add'),
+    path('goal-settings/progress/<int:progress_id>/', ProgressView.as_view(), name='goal_progress_edit'),
 
 ]
 
