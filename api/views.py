@@ -181,8 +181,8 @@ class ProgressView(APIView):
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
             return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
-        
-    
+
+
     @method_decorator(ratelimit(key='user_or_ip', rate='30/m', method='PATCH'))
     def patch(self, request, progress_id, format=None):
         try:
@@ -200,12 +200,12 @@ class ProgressView(APIView):
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
             return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 class LinkListView(generics.ListAPIView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
 
-    @method_decorator(ratelimit(key='user_or_ip', rate='20/m', method='GET'))
+    @method_decorator(ratelimit(key='user_or_ip', rate='50/m', method='GET'))
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)

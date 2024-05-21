@@ -18,10 +18,9 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG").lower() in ['true', '1', 'yes']
 APPEND_SLASH=False
 
-ALLOWED_HOSTS = ['*']
-
 if not DEBUG:
     RATELIMIT_IP_META_KEY = 'HTTP_X_REAL_IP'
+ALLOWED_HOSTS = ['*', '51.21.132.179', 'http://51.21.132.179']
 
 # Application definition
 
@@ -67,7 +66,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://*',
     'https://*',
 ]
-
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
@@ -209,4 +207,3 @@ TINYMCE_COMPRESSOR = False
 
 ADMIN_EMAIL=env("ADMIN_EMAIL")
 USE_ADMIN_OTP_LOGIN=env('USE_ADMIN_OTP_LOGIN').lower() in ['true', '1', 'yes']
-
