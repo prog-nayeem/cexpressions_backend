@@ -88,4 +88,4 @@ class GoalSettingsSerializer(serializers.ModelSerializer):
 class LinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Link
-        fields = ['id', 'name', 'url']
+        fields = ['id', 'name', 'url', 'is_share_app', 'share_app_message']

@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Progress, Link
 from django.db import models
 from tinymce.widgets import TinyMCE
+from django import forms
 
 class AboutPageAdmin(admin.ModelAdmin):
     formfield_overrides = {
@@ -75,9 +76,10 @@ class ProgressAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     search_help_text= "Search by ID or Goal"
 
+
 @admin.register(Link)
 class LinkAdmin(admin.ModelAdmin):
-    list_display = ('name', 'url')
+    list_display = ('name', 'url', 'is_share_app')
     search_fields = ('name',)
 
 

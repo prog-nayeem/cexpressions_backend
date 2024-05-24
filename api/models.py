@@ -105,6 +105,8 @@ class Progress(models.Model):
 class Link(models.Model):
     name = models.CharField(max_length=255)
     url = models.URLField(max_length=500)
+    is_share_app = models.BooleanField(default=False)
+    share_app_message = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
