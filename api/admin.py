@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Progress
+from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Progress, Link
 from django.db import models
 from tinymce.widgets import TinyMCE
 
@@ -74,7 +74,11 @@ class ProgressAdmin(admin.ModelAdmin):
     search_fields = ("id", "goal__goal_to_achieve")
     list_filter = ("status",)
     search_help_text= "Search by ID or Goal"
-    
+
+@admin.register(Link)
+class LinkAdmin(admin.ModelAdmin):
+    list_display = ('name', 'url')
+    search_fields = ('name',)
 
 
 admin.site.register(AboutPage, AboutPageAdmin)
@@ -83,4 +87,5 @@ admin.site.register(SuccessfulGoalPlanningInstruction , SuccessfulGoalPlanningIn
 admin.site.register(SuggestionsForSuccess , SuggestionsForSuccessAdmin)
 admin.site.register(GoalSettings , GoalSettingsAdmin)
 admin.site.register(Progress, ProgressAdmin)
+
 

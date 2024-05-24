@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AboutPageView, GoalSettingsView, SuccessfulGoalPlanningInstructionView, SuggestionsForSuccessView, UnderstandingGoalPrioritizationView,ProgressView
+from .views import AboutPageView, GoalSettingsView, SuccessfulGoalPlanningInstructionView, SuggestionsForSuccessView, UnderstandingGoalPrioritizationView,ProgressView, LinkListView
 
 urlpatterns = [
     path('about/', AboutPageView.as_view({'get': 'retrieve'}), name='about'),
@@ -10,7 +10,7 @@ urlpatterns = [
     path('goal-settings/<int:pk>/', GoalSettingsView.as_view(), name='goal_settings'),
     path('goal-settings/<int:goal_id>/progress/', ProgressView.as_view(), name='goal_progress_add'),
     path('goal-settings/progress/<int:progress_id>/', ProgressView.as_view(), name='goal_progress_edit'),
-
+    path('links/', LinkListView.as_view(), name='link-list'),
 ]
 
  

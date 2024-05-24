@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from accounts.models import User
-from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Progress
+from .models import AboutPage, GoalSettings, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Progress, Link
 
 class AboutPageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,3 +85,7 @@ class GoalSettingsSerializer(serializers.ModelSerializer):
         return data
 
 
+class LinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Link
+        fields = ['id', 'name', 'url']

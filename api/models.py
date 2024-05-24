@@ -102,3 +102,9 @@ class Progress(models.Model):
 
 
 
+class Link(models.Model):
+    name = models.CharField(max_length=255)
+    url = models.URLField(max_length=500)
+
+    def __str__(self):
+        return self.name

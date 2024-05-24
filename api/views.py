@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from accounts.models import User
-from .models import AboutPage, GoalSettings, Progress, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization
-from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer, ProgressSerializer
+from .models import AboutPage, GoalSettings, Progress, SuccessfulGoalPlanningInstruction, SuggestionsForSuccess, UnderstandingGoalPrioritization, Link
+from .serializers import AboutPageSerializer, GoalSettingsSerializer, SuccessfulGoalPlanningInstructionSerializer, SuggestionsForSuccessSerializer, UnderstandingGoalPrioritizationSerializer, ProgressSerializer, LinkSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed, NotFound
 from django_ratelimit.decorators import ratelimit
@@ -199,3 +200,8 @@ class ProgressView(APIView):
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
             return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class LinkListView(generics.ListAPIView):
+    queryset = Link.objects.all()
+    serializer_class = LinkSerializer
