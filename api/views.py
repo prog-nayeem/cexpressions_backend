@@ -205,3 +205,7 @@ class ProgressView(APIView):
 class LinkListView(generics.ListAPIView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
+
+    @method_decorator(ratelimit(key='user_or_ip', rate='20/m', method='GET'))
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
