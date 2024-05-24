@@ -21,7 +21,8 @@ class UnderstandingGoalPrioritizationAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': TinyMCE()}
     }
-    list_display = ("id", "created_at")
+    list_display = ("id", "title", "created_at")
+    list_display_links = ("id", "title")
 
 
 
@@ -29,7 +30,7 @@ class SuccessfulGoalPlanningInstructionAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': TinyMCE()}
     }
-    list_display = ("id", "created_at")
+    list_display = ("id", "created_at", "is_active")
 
     def save_model(self, request, obj, form, change):
         if obj.is_active:
@@ -41,7 +42,7 @@ class SuggestionsForSuccessAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': TinyMCE()}
     }
-    list_display = ("id", "created_at")
+    list_display = ("id", "created_at", "is_active")
 
     def save_model(self, request, obj, form, change):
         if obj.is_active:

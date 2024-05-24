@@ -32,7 +32,7 @@ class UnderstandingGoalPrioritizationView(viewsets.ViewSet):
     @method_decorator(ratelimit(key='user_or_ip', rate='100/m', method='GET'))
     def list(self, request):
         try:
-            queryset = UnderstandingGoalPrioritization.objects.all()
+            queryset = UnderstandingGoalPrioritization.objects.all().order_by('id')
 
             serializer = UnderstandingGoalPrioritizationSerializer(queryset, many=True)
 
