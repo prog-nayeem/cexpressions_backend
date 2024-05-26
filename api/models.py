@@ -103,10 +103,17 @@ class Progress(models.Model):
 
 
 class Link(models.Model):
+    PLATFORM_CHOICES = [
+        ('All', 'All Platforms'),
+        ('iOS', 'iOS'),
+        ('Android', 'Android'),
+    ]
+     
     name = models.CharField(max_length=255)
     url = models.URLField(max_length=500)
     is_share_app = models.BooleanField(default=False)
     share_app_message = models.TextField(blank=True, null=True)
+    platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, default='All')
 
     def __str__(self):
         return self.name

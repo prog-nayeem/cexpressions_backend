@@ -80,8 +80,11 @@ class ProgressAdmin(admin.ModelAdmin):
 
 @admin.register(Link)
 class LinkAdmin(admin.ModelAdmin):
-    list_display = ('name', 'url', 'is_share_app')
-    search_fields = ('name',)
+    list_display = ('id', 'name', 'url','platform', 'is_share_app')
+    list_display_links = ('id', 'name')
+    search_fields = ('name', 'url')
+    search_help_text= "Search by Name or URL"
+
 
 
 admin.site.register(AboutPage, AboutPageAdmin)

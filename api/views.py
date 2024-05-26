@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed, NotFound
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
+from django.db.models import Q
 
 
 
@@ -201,11 +202,16 @@ class ProgressView(APIView):
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
             return Response({'success': False, 'errors': formatted_errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class LinkListView(generics.ListAPIView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='50/m', method='GET'))
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        platform = request.query_params.get('platform', 'All')
+        
+        queryset = Link.objects.filter(Q(platform=platform) | Q(platform='All'))
+       
+        queryset = queryset.order_by('id') 
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
