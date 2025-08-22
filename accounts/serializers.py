@@ -103,11 +103,22 @@ class GoogleSignInSerializer(serializers.Serializer):
 
         user_id=user_data['sub']
         email=user_data['email']
-        full_name=user_data['given_name'] + ' ' + user_data['family_name']
+        given_name = user_data.get('given_name', '')
+        family_name = user_data.get('family_name', '')
+        
+        if given_name and family_name:
+            full_name = f"{given_name} {family_name}"
+        elif given_name:
+            full_name = given_name
+        elif family_name:
+            full_name = family_name
+        else:
+            full_name = email.split('@')[0]
+
 
         provider='google'
 
-        return register_social_user(provider, email, full_name,)
+        return register_social_user(provider, email, full_name)
 
 class FacebookSignInSerializer(serializers.Serializer):
     access_token = serializers.CharField()
