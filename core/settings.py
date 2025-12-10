@@ -144,6 +144,16 @@ AUTH_APPLE_PRIVATE_KEY = env('AUTH_APPLE_PRIVATE_KEY')
 AUTH_APPLE_CLIENT_ID = env('AUTH_APPLE_CLIENT_ID')
 AUTH_APPLE_APP_ID = env('AUTH_APPLE_APP_ID')
 ACCESS_TOKEN_URL = 'https://appleid.apple.com/auth/token'
+FRONTEND_URL = env("FRONTEND_URL")
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -207,3 +217,4 @@ TINYMCE_COMPRESSOR = False
 
 ADMIN_EMAIL=env("ADMIN_EMAIL")
 USE_ADMIN_OTP_LOGIN=env('USE_ADMIN_OTP_LOGIN').lower() in ['true', '1', 'yes']
+

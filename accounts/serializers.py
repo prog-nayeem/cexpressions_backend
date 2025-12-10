@@ -6,6 +6,8 @@ from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 from .helpers import Facebook, Google, register_social_user
 from .exceptions import CustomAuthenticationFailed
+from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken 
 
 ADMIN_EMAIL = settings.ADMIN_EMAIL
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -119,6 +121,7 @@ class GoogleSignInSerializer(serializers.Serializer):
         provider='google'
 
         return register_social_user(provider, email, full_name)
+    
 
 class FacebookSignInSerializer(serializers.Serializer):
     access_token = serializers.CharField()
@@ -142,3 +145,78 @@ class FacebookSignInSerializer(serializers.Serializer):
         provider = 'facebook'
 
         return register_social_user(provider, email, full_name,)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email does not exist.")
+        return value
+    
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    otp = serializers.CharField(min_length=6, max_length=6, write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        otp = attrs.get('otp')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid email or OTP.")
+
+        # Check OTP
+        if not user.otp_code or user.otp_code != otp:
+            raise serializers.ValidationError("Invalid OTP.")
+
+        # Check Expiry
+        if user.otp_created_at < timezone.now():
+            user.otp_code = None
+            user.otp_created_at = None
+            user.save()
+            raise serializers.ValidationError("OTP has expired.")
+        
+        # OTP is valid: Clear OTP fields
+        user.otp_code = None
+        user.otp_created_at = None
+        
+        # Generate a temporary, unique token 
+        refresh = RefreshToken.for_user(user) 
+        reset_token = str(refresh.access_token)
+        
+        user.reset_token = reset_token
+        user.save()
+
+        attrs['reset_token'] = reset_token
+        return attrs
+
+class SetNewPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(min_length=6, write_only=True)
+    reset_token = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        reset_token = attrs.get('reset_token')
+
+        try:
+            user = User.objects.get(reset_token=reset_token)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid or expired reset token.")
+        
+        # Clear the one-time token after successful validation
+        user.reset_token = None
+        user.save()
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self):
+        password = self.validated_data['password']
+        user = self.validated_data['user']
+        user.set_password(password)
+        user.save()
+        return user
