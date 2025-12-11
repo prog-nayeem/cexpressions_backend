@@ -144,7 +144,6 @@ AUTH_APPLE_PRIVATE_KEY = env('AUTH_APPLE_PRIVATE_KEY')
 AUTH_APPLE_CLIENT_ID = env('AUTH_APPLE_CLIENT_ID')
 AUTH_APPLE_APP_ID = env('AUTH_APPLE_APP_ID')
 ACCESS_TOKEN_URL = 'https://appleid.apple.com/auth/token'
-FRONTEND_URL = env("FRONTEND_URL")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
