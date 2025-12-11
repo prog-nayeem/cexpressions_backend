@@ -20,7 +20,7 @@ APPEND_SLASH=False
 
 if not DEBUG:
     RATELIMIT_IP_META_KEY = 'HTTP_X_REAL_IP'
-ALLOWED_HOSTS = ['*', '51.21.132.179', 'http://51.21.132.179']
+ALLOWED_HOSTS = ['*', '3.83.254.154', 'http://3.83.254.154']
 
 # Application definition
 
