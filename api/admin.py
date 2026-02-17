@@ -57,11 +57,11 @@ class ProgressInline(admin.TabularInline):
 
 
 class GoalSettingsAdmin(admin.ModelAdmin):
-    list_display = ("id","goal_to_achieve", "user", "created_at")
+    list_display = ("id","goal_to_achieve", "user", "status", "created_at")
     list_display_links = ("id", "goal_to_achieve", "user")
     search_fields = ("id", "user__email")
     search_help_text= "Search by ID or user email"
-    list_filter=("goal_term", "priority_scale")
+    list_filter=("goal_term", "priority_scale", "status")
     inlines = [ProgressInline]
 
 
@@ -74,7 +74,6 @@ class ProgressAdmin(admin.ModelAdmin):
     get_goal_to_achieve.admin_order_field = 'goal__goal_to_achieve' 
     get_goal_to_achieve.short_description = 'Goal To Achieve'
     search_fields = ("id", "goal__goal_to_achieve")
-    list_filter = ("status",)
     search_help_text= "Search by ID or Goal"
 
 

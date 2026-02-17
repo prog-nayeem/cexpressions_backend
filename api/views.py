@@ -1,3 +1,4 @@
+
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -88,23 +89,32 @@ class GoalSettingsView(APIView):
         except AuthenticationFailed:
             return Response({'success': False, 'error': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def get_user_goals(self, user, progress_status=None):
+    def get_user_goals(self, user, goal_status=None):
+        """
+        Get user goals, optionally filtered by the goal's status (not progress status).
+        
+        Args:
+            user: The authenticated user
+            goal_status: Optional status filter ('In Progress' or 'Completed')
+        
+        Returns:
+            List of goal dictionaries with their progress entries
+        """
+        # Start with base queryset
         goals = GoalSettings.objects.filter(user=user).prefetch_related('progresses')
+        
+        # Filter by goal status if provided
+        if goal_status:
+            goals = goals.filter(status=goal_status)
+        
+        # Build response data
         goal_data = []
-
-        if progress_status:
-            for goal in goals:
-                progresses = goal.progresses.filter(status=progress_status)
-                if progresses.exists(): 
-                    goal_dict = GoalSettingsSerializer(goal).data
-                    goal_dict['progresses'] = ProgressSerializer(progresses, many=True).data
-                    goal_data.append(goal_dict)
-        else:
-            for goal in goals:
-                progresses = goal.progresses.all()
-                goal_dict = GoalSettingsSerializer(goal).data
-                goal_dict['progresses'] = ProgressSerializer(progresses, many=True).data
-                goal_data.append(goal_dict)
+        for goal in goals:
+            goal_dict = GoalSettingsSerializer(goal).data
+            # Include all progress entries for each goal (not filtered by status)
+            progresses = goal.progresses.all().order_by('-goal_date')
+            goal_dict['progresses'] = ProgressSerializer(progresses, many=True).data
+            goal_data.append(goal_dict)
 
         return goal_data
     
@@ -115,8 +125,17 @@ class GoalSettingsView(APIView):
             if not isinstance(user, User): 
                 raise NotFound("User not found.")
             
-            progress_status = request.query_params.get('status')
-            user_goals = self.get_user_goals(user, progress_status=progress_status)
+            # Get status from query params (this now refers to GOAL status, not progress status)
+            goal_status = request.query_params.get('status')
+            
+            # Validate status if provided
+            if goal_status and goal_status not in dict(GoalSettings.STATUS_CHOICES).keys():
+                return Response(
+                    {'success': False, 'error': f'Invalid status. Choose from: {", ".join(dict(GoalSettings.STATUS_CHOICES).keys())}'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            user_goals = self.get_user_goals(user, goal_status=goal_status)
             return Response({'success': True, 'data': user_goals})
         except NotFound as e:
             return Response({'success': False, 'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
@@ -175,9 +194,32 @@ class ProgressView(APIView):
         if goal.user != request.user:
             return Response({'success': False, 'error': 'You are not allowed to add progress to this goal.'}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = ProgressSerializer(data=request.data)
+        # Extract status from request if provided
+        new_status = request.data.get('status')
+        
+        # Create progress update (without status field)
+        progress_data = {
+            'progress_accomplishment': request.data.get('progress_accomplishment'),
+            'setbacks': request.data.get('setbacks'),
+            'what_will_do_next': request.data.get('what_will_do_next'),
+            'goal_date': request.data.get('goal_date')
+        }
+        
+        serializer = ProgressSerializer(data=progress_data)
         if serializer.is_valid():
             serializer.save(goal=goal)
+            
+            # Update goal status ONLY if it changed
+            if new_status and new_status != goal.status:
+                # Validate the new status
+                if new_status not in dict(GoalSettings.STATUS_CHOICES).keys():
+                    return Response(
+                        {'success': False, 'error': f'Invalid status. Choose from: {", ".join(dict(GoalSettings.STATUS_CHOICES).keys())}'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                goal.status = new_status
+                goal.save(update_fields=['status'])
+            
             return Response({'success': True, 'message': 'Progress added successfully'}, status=status.HTTP_201_CREATED)
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}
@@ -194,9 +236,27 @@ class ProgressView(APIView):
         if progress.goal.user != request.user:
             return Response({'success': False, 'error': 'You are not allowed to update this progress.'}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = ProgressSerializer(progress, data=request.data, partial=True)
+        # Extract status from request if provided
+        new_status = request.data.get('status')
+        
+        # Update progress (without status field)
+        progress_data = {k: v for k, v in request.data.items() if k != 'status'}
+        
+        serializer = ProgressSerializer(progress, data=progress_data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            
+            # Update goal status ONLY if it changed
+            if new_status and new_status != progress.goal.status:
+                # Validate the new status
+                if new_status not in dict(GoalSettings.STATUS_CHOICES).keys():
+                    return Response(
+                        {'success': False, 'error': f'Invalid status. Choose from: {", ".join(dict(GoalSettings.STATUS_CHOICES).keys())}'}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                progress.goal.status = new_status
+                progress.goal.save(update_fields=['status'])
+            
             return Response({'success': True, 'message': 'Progress updated successfully'}, status=status.HTTP_200_OK)
         else:
             formatted_errors = {field: errors[0] for field, errors in serializer.errors.items()}

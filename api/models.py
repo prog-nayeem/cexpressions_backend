@@ -61,6 +61,12 @@ class GoalSettings(models.Model):
         ('Long Term', 'Long Term'),
     ]
 
+    STATUS_CHOICES = [
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed')
+    ]
+
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     goal_to_achieve = models.CharField()
     purpose_of_goal = models.CharField()
@@ -69,6 +75,7 @@ class GoalSettings(models.Model):
     target_completion_date = models.DateTimeField()
     priority_scale = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
     goal_term = models.CharField(max_length=20, choices=TERM_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='In Progress')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -81,16 +88,10 @@ class GoalSettings(models.Model):
 
 
 class Progress(models.Model):
-    STATUS_CHOICES = [
-        ('In Progress', 'In Progress'),
-        ('Completed', 'Completed')
-    ]
-
     goal = models.ForeignKey(GoalSettings, on_delete=models.CASCADE, related_name='progresses')
     progress_accomplishment = models.CharField(max_length=255, null=True, blank=True)
     setbacks = models.CharField(max_length=255, null=True, blank=True)
     what_will_do_next = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, null=True, blank=True)
     goal_date = models.DateTimeField(default=timezone.now, editable=True)
 
     def __str__(self):

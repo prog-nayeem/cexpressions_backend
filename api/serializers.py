@@ -29,15 +29,7 @@ class SuggestionsForSuccessSerializer(serializers.ModelSerializer):
 class ProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Progress
-        fields = ['id', 'progress_accomplishment', 'setbacks', 'what_will_do_next', 'status', 'goal_date']
-    
-    def validate_status(self, value):
-        """
-        Validate status based on choices.
-        """
-        if value not in dict(Progress.STATUS_CHOICES).keys():
-            raise serializers.ValidationError("Invalid status. Choose from available options.")
-        return value
+        fields = ['id', 'progress_accomplishment', 'setbacks', 'what_will_do_next', 'goal_date']
 
 
 class GoalSettingsSerializer(serializers.ModelSerializer):
@@ -51,7 +43,7 @@ class GoalSettingsSerializer(serializers.ModelSerializer):
      
     class Meta:
         model = GoalSettings
-        fields = ['id', 'user', 'goal_to_achieve', 'purpose_of_goal', 'plan_to_implement', 'area_of_focus', 'target_completion_date', 'priority_scale', 'goal_term', 'progresses', 'created_at']
+        fields = ['id', 'user', 'goal_to_achieve', 'purpose_of_goal', 'plan_to_implement', 'area_of_focus', 'target_completion_date', 'priority_scale', 'goal_term', 'status', 'progresses', 'created_at']
     
     def validate_target_completion_date(self, value):
         """
@@ -78,6 +70,12 @@ class GoalSettingsSerializer(serializers.ModelSerializer):
             goal_term = data.get('goal_term')
             if goal_term not in dict(GoalSettings.TERM_CHOICES).keys():
                 errors['goal_term'] = 'Invalid goal term. Choose from available options.'
+        
+        # Validate status
+        if not is_partial_update or 'status' in data:
+            status = data.get('status')
+            if status and status not in dict(GoalSettings.STATUS_CHOICES).keys():
+                errors['status'] = 'Invalid status. Choose from available options.'
 
         if errors:
             raise serializers.ValidationError(errors)
